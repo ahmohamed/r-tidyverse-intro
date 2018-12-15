@@ -101,7 +101,7 @@ The `filter()` function is used to select rows of data.  For example, to select 
 Europe:
 
 ```{r}
-gapminder_Europe <- filter(gapminder, continent=="Europe") 
+gapminder_Europe <- filter(gapminder, continent!="Europe") 
 print(gapminder_Europe)
 ```
 
