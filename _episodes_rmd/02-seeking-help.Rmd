@@ -86,7 +86,6 @@ The tidyverse is a collection of other packages that work well together.  The `t
 > 
 {: .callout}
 
-
 ## Reading Help files
 
 R, and every package, provide help files for functions. The general syntax to search for help on any
@@ -119,7 +118,6 @@ Different functions might have different sections, but these are the main ones y
 > correct usage for every function you use. Luckily, the help files
 > mean you don't have to!
 {: .callout}
-
 ## Special Operators
 
 To seek help on special operators, use quotes:
@@ -158,7 +156,6 @@ If a package doesn't have any vignettes, you can usually find help by typing
 > ```
 > {: .solution}
 {: .challenge}
-
 ## When you kind of remember the function
 
 If you're not sure what package a function is in, or how it's specifically spelled you can do a fuzzy search:
@@ -170,7 +167,6 @@ If you're not sure what package a function is in, or how it's specifically spell
 > If you use R in your work you should cite it, and the packages you use. The `citation()` command will return the appropriate citation for R itself.  `citation(packagename)` will provide the citation for `packagename`. 
 >
 {: .callout}
-
 ## When your code doesn't work: seeking help from your peers
 
 If you're having trouble using a function, 9 times out of 10,

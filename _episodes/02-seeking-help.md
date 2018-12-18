@@ -85,10 +85,10 @@ library("tidyverse")
 
 
 ~~~
-✔ ggplot2 3.0.0     ✔ purrr   0.2.5
-✔ tibble  1.4.2     ✔ dplyr   0.7.6
-✔ tidyr   0.8.1     ✔ stringr 1.3.1
-✔ readr   1.1.1     ✔ forcats 0.3.0
+✔ ggplot2 3.1.0     ✔ purrr   0.2.5
+✔ tibble  1.4.2     ✔ dplyr   0.7.8
+✔ tidyr   0.8.2     ✔ stringr 1.3.1
+✔ readr   1.2.1     ✔ forcats 0.3.0
 ~~~
 {: .output}
 
@@ -112,7 +112,6 @@ The tidyverse is a collection of other packages that work well together.  The `t
 > If you want to use the function from the other package, use `packagename::function()`.
 > 
 {: .callout}
-
 
 ## Reading Help files
 
@@ -148,7 +147,6 @@ Different functions might have different sections, but these are the main ones y
 > correct usage for every function you use. Luckily, the help files
 > mean you don't have to!
 {: .callout}
-
 ## Special Operators
 
 To seek help on special operators, use quotes:
@@ -193,7 +191,6 @@ If a package doesn't have any vignettes, you can usually find help by typing
 > > {: .language-r}
 > {: .solution}
 {: .challenge}
-
 ## When you kind of remember the function
 
 If you're not sure what package a function is in, or how it's specifically spelled you can do a fuzzy search:
@@ -207,7 +204,6 @@ If you're not sure what package a function is in, or how it's specifically spell
 > If you use R in your work you should cite it, and the packages you use. The `citation()` command will return the appropriate citation for R itself.  `citation(packagename)` will provide the citation for `packagename`. 
 >
 {: .callout}
-
 ## When your code doesn't work: seeking help from your peers
 
 If you're having trouble using a function, 9 times out of 10,

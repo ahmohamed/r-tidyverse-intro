@@ -1,0 +1,169 @@
+---
+title: "Reading tibbles"
+teaching: 20
+exercises: 10
+questions:
+- "How can I read and write tabular data in R?"
+- "What are the basic data types in R?"
+objectives:
+- "To be aware of the different types of data."
+- "To begin exploring `tibbles`"
+- "To be able to extract parts of a `tibble`"
+keypoints:
+- "Tibbles let us store tabular data in R.  Tibbles are an extension of the base R data frame."
+- "Use `read_csv` to read tabular data into a tibble R."
+- "User `write_csv` to write tabular data to a comma separated value file."
+- "Use factors to represent categorical data in R. You should specify the levels of your factors."
+source: Rmd
+---
+
+We can import the data into R using the `read_csv()` function; this is part of the `readr` package, which is part of the `tidyverse`. 
+
+Although we loaded the tidyverse in the previous episode, we should make our scripts self-contained, so we should include `library(readr)` in the new script.   We could use `library(tidyverse)` to load all of the commonly used packages in the tidyverse.   We then use   the `read_csv()` function to import the data, which we store in the object named `cats`:
+
+
+```r
+library(readr)
+dat <- read_csv(file = "data/brca-clinical-01.csv")
+```
+
+```
+## Parsed with column specification:
+## cols(
+##   PATIENT_ID = col_character(),
+##   SEX = col_character(),
+##   AGE = col_double(),
+##   METASTASIS = col_character(),
+##   OS_STATUS = col_character(),
+##   OS_MONTHS = col_double()
+## )
+```
+
+We see that the `read_csv()` table reports a "column specification".  This shows the variable names that were read in, and the type of data that each column was interpreted as.
+
+
+```r
+dat
+```
+
+```
+## # A tibble: 20 x 6
+##    PATIENT_ID      SEX      AGE METASTASIS OS_STATUS OS_MONTHS
+##    <chr>           <chr>  <dbl> <chr>      <chr>         <dbl>
+##  1 TCGA-A2-A0T2-01 FEMALE    66 M1         DECEASED       7.89
+##  2 TCGA-A2-A04P-01 FEMALE    36 M0         DECEASED      18.0 
+##  3 TCGA-A1-A0SK-01 FEMALE    54 M0         DECEASED      31.8 
+##  4 TCGA-A2-A0CM-01 FEMALE    40 M0         DECEASED      24.8 
+##  5 TCGA-AR-A1AR-01 FEMALE    50 M0         DECEASED      17.2 
+##  6 TCGA-B6-A0WX-01 FEMALE    40 M0         DECEASED      21.4 
+##  7 TCGA-BH-A1F0-01 FEMALE    80 M0         DECEASED      25.8 
+##  8 TCGA-B6-A0I6-01 FEMALE    49 M0         DECEASED      32.8 
+##  9 TCGA-BH-A18V-01 FEMALE    48 M0         DECEASED      51.1 
+## 10 TCGA-BH-A18Q-01 FEMALE    56 M0         DECEASED      55.6 
+## 11 TCGA-BH-A18K-01 FEMALE    46 M0         DECEASED      90.8 
+## 12 TCGA-BH-A0HL-01 FEMALE    56 M0         LIVING         2.37
+## 13 TCGA-BH-A0E0-01 FEMALE    38 M0         LIVING         4.37
+## 14 TCGA-BH-A0RX-01 FEMALE    59 M0         LIVING         5.59
+## 15 TCGA-A7-A13D-01 FEMALE    46 M0         LIVING         8.77
+## 16 TCGA-BH-A0E6-01 FEMALE    69 M0         LIVING         9.59
+## 17 TCGA-AO-A0J4-01 FEMALE    41 M0         LIVING         9.66
+## 18 TCGA-A7-A0CE-01 FEMALE    57 M0         LIVING        10.2 
+## 19 TCGA-A7-A13E-01 FEMALE    62 M0         LIVING        10.7 
+## 20 TCGA-A7-A0DA-01 FEMALE    62 M0         LIVING        12.2
+```
+When we enter `dat` by itself on the command line, it will print the contents of `dat`; we see that it consists of a `tibble`. A tibble is a way of storing tabular data, which is part of the tidyverse.  We see the variable names, and an (abbreviated) string indicating what type of data is stored in each variable.
+
+
+> ## read_csv() vs read.csv()
+> `read.csv()` function is included as part of base R, and performs a similar job 
+> to `read_csv()`.  We will be using `read_csv()` in this course; it is part of the tidyverse,
+> so works well with other parts of the tidyverse, is faster than `read.csv()` and handles 
+> strings in a way that is usually more useful than `read.csv()`.
+{: .callout}
+
+> ## Loading other types of data
+>
+> Another type of file you might encounter are tab-separated value files (.tsv); these can be read with the `read_tsv()` function in the `readr` package.  To read files with other delimiters, use the `read_delim()` function. If files are fixed width format (i.e. the variable is defined by its position on the line), then use the `read_fwf()` function.
+>
+>  The tidyverse comes with several packages for loading data in other formats.  These include:
+> * [readxl](http://readxl.tidyverse.org) for reading data from Excel spreadsheets
+> * [haven](http://haven.tidyverse.org/) for reading SAS, SPSS and Stata data files
+> * [xml2](http://xml2.tidyverse.org/) for reading xml data
+> 
+> These aren't loaded by default (when we use `library("tidyverse")`), so they will need to be loaded
+> separately, e.g. `library("readxl")`, etc.  There are also tidyverse packages for getting data via 
+> web APIs, or by "scraping" websites.  
+{: .callout}
+
+
+## Data types
+
+Every piece of data in R is stored as either `double`, `integer`, `complex`, `logical` or `character`.
+- `integer` variables can only store whole numbers
+- `double` variables can store floating point numbers (i.e. with a decimal part)
+- `complex` variables can store complex numbers (i.e. of the form `1+2i`)
+- `logical` variables can store `TRUE` or `FALSE`
+- `character` variables can store strings of characters.
+- `factor` variables can store categories (Sex: M/F).
+
+When we read the data into
+R using `read_csv()` it tries to work out what data type each variable is, which it does by looking at the data contained in the first 1000 rows of the data file.   We can see from the displayed message that `read_csv()` has treated the `coat` variable as a character variable, the `weight` variable as a floating point number and `likes_string` as an integer variable.
+
+This is almost correct; `SEX` is, however a factor — the patient is either a MALE or FEMALE.  We can specify how we would like `read_csv()` to treat the data in each variable using the `col_types` option; let's tell `read_csv()` to treat `SEX` as a factor variable:
+
+
+```r
+dat <- read_csv("data/brca-clinical-01.csv", col_types = cols(
+    AGE = col_integer(),
+    SEX = col_factor(),
+    METASTASIS = col_factor(),
+    OS_STATUS = col_factor()
+))
+```
+
+That's a lot of typing!  Fortunately, we don't have to type everything by hand.  The `cols()` function above may look familiar; if we load a file using `read_csv()` without specifying the `col_types` option, it will print out the `cols()` function it has generated during the import process.  We can copy and paste this into our script, and modify it as required.   
+
+If we look at the imported data, we will now see that the `SEX` variable is recorded as a factor. We don't *have* to specify a column type for each variable; the `cols()` function will guess the data types for the columns we don't specify.  It is, however, a good idea to be explicit about the type of data we expect to be in each column.
+
+> ## Importing data using RStudio
+> 
+> You may have noticed when we viewed the `brca-clinical-01.csv` file in RStudio, before importing it, that another option  appeared, labelled "Import Dataset".  This lets us import the data interactively.   It can be more convenient to use this approach, rather than manually writing the required code.   If you do this, you will find that the code RStudio has written is put into the console and run (and will appear in the history tab in RStudio).  It's fine to do this initially, but *you should copy the generated code to your script, so that you can reproduce your analysis*. 
+{: .callout}
+
+## Exploring tibbles
+
+We can "unpick" the contents of a tibble similar to data frames.
+
+> ## Tibbles vs data frames
+> 
+> Tibbles are used to represent tabular data in the tidyverse.  In contrast, base R
+> uses data frames to represent tabular data. One of the differences between these 
+> two types of object is *what* is returned when you extract a subset of rows/columns.
+> In contrast to a tibble, taking a subset of a data frame doesn't always return
+> another data frame. For more details see the callout at the end of this episode.
+{: .callout}
+
+## Writing data in R
+
+We can save a tibble (or data frame) to a csv file, using `readr`'s `write_csv()` function.  For example, to save the patients data to `patients.csv`:
+
+
+```r
+write_csv(dat, "data/patients.csv")
+```
+
+
+> ## Doing more with factors
+> 
+> If you wish to perform more complex operations on factors, such as recoding 
+> level names, changing level order, and collapsing multiple levels into one,
+> the [forcats](http://forcats.tidyverse.org/) package, which is part of the tidyverse
+> makes this easy.  Note that `forcats` isn't loaded by default, so you will
+> need to use `library("forcats")` before using it.
+{: .callout}
+
+## Matrices
+
+We can also define matrices in R.  We don't cover this in this course, since we are focussing
+on data-analysis, rather than maths and algorithms.   For details of the matrix class, you can refer to the [original Software Carpentry version of these notes](http://swcarpentry.github.io/r-novice-gapminder/04-data-structures-part1/#matrices).
+

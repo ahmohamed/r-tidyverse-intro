@@ -3,506 +3,339 @@ title: "Loading data into R"
 teaching: 20
 exercises: 10
 questions:
-- "How can I read and write tabular data in R?"
-- "What are the basic data types in R?"
+- "How do I read data into R?"
+- "How do I assign variables?"
+- "What is a data frame?"
+- "How do I access subsets of a data frame?"
+- "How do I calculate simple statistics like mean and median?"
 objectives:
-- "To be aware of the different types of data."
-- "To begin exploring `tibbles`"
-- "To be able to extract parts of a `tibble`"
+- "Read tabular data from a file into a program."
+- "Assign values to variables."
+- "Select individual values and subsections from data."
+- "Perform operations on a data frame of data."
 keypoints:
-- "Tibbles let us store tabular data in R.  Tibbles are an extension of the base R data frame."
-- "Use `read_csv` to read tabular data into a tibble R."
-- "User `write_csv` to write tabular data to a comma separated value file."
-- "Use factors to represent categorical data in R. You should specify the levels of your factors."
+- "The function `dim` gives the dimensions of a data frame."
+- "Use `object[x, y]` to select a single element from a data frame."
+- "Use `from:to` to specify a sequence that includes the indices from `from` to `to`."
+- "All the indexing and subsetting that works on data frames also works on vectors."
+- "Use `mean`, `max`, `min` and `sd` to calculate simple statistics."
 source: Rmd
 ---
-
-
-
 One of R's most powerful features is its ability to deal with tabular data —
 such as you may already have in a spreadsheet or a CSV file. 
 
-The [course data]({{ page.root }}/data/r-novice.zip) contains a `.csv` file
-called `feline-data.csv`, which you copied to the `data/` folder when we discussed managing projects in RStudio.
+The [course data]({{ page.root }}/data/r-novice-cancer.zip) contains a `.csv` file
+called `brca-clinical-01.csv`, which you copied to the `data/` folder when we discussed managing projects in RStudio.
 
 
-~~~
-coat,weight,likes_string
-calico,2.1,1
-black,5.0,0
-tabby,3.2,1
-~~~
-{: .language-r}
-
-
+```r
+PATIENT_ID,SEX,AGE,METASTASIS,OS_STATUS,OS_MONTHS
+TCGA-A2-A0T2-01,FEMALE,66,M1,DECEASED,7.89
+TCGA-A2-A04P-01,FEMALE,36,M0,DECEASED,17.97
+TCGA-A1-A0SK-01,FEMALE,54,M0,DECEASED,31.77
+TCGA-A2-A0CM-01,FEMALE,40,M0,DECEASED,24.77
+```
 
 We can view the contents of the file by selecting it from the "Files" window in RStudio, and selecting "View File".  This will display the contents of the file in a new window in RStudio.  We can see that the variables names are given in the first line of the file, and that the remaining lines contain the data itself.  Each observation is on a separate line, and variables are separated by commas. Note that viewing the file  _doesn't_ make its contents available to R; to do this we need to _import_ the data.
 
-We can import the data into R using the `read_csv()` function; this is part of the `readr` package, which is part of the `tidyverse`. 
-
 Let's make a new script for this episode, by choosing the menu options _File_, _New File_, _R Script_.
 
-Although we loaded the tidyverse in the previous episode, we should make our scripts self-contained, so we should include `library(readr)` in the new script.   We could use `library(tidyverse)` to load all of the commonly used packages in the tidyverse.   We then use   the `read_csv()` function to import the data, which we store in the object named `cats`:
+### Loading Data
+
+Let's import the file called `brca-clinical-01.csv` into our R environment. To import the file, first we need to tell our computer where the file is. We do that by choosing a working directory, that is, a local directory on our computer containing the files we need. This is very important in R. If we forget this step we'll get an error message saying that the file does not exist. We can set the working directory using the function `setwd`. For this example, we change the path to our new directory at the desktop:
 
 
-~~~
-library(readr)
-cats <- read_csv(file = "data/feline-data.csv")
-~~~
-{: .language-r}
+```r
+setwd("~/Desktop/r-novice-cancer/")
+```
+
+Just like in the Unix Shell, we type the command and then press <kbd>Return</kbd> (or <kbd>Enter</kbd>).
+Alternatively you can change the working directory using the RStudio GUI using the menu option `Session` -> `Set Working Directory` -> `Choose Directory...`
+
+The data file is located in the directory `data` inside the working directory. Now we can load the data into R using `read.csv`:
 
 
+```r
+read.csv(file = "data/brca-clinical-01.csv")
+```
 
-~~~
-Parsed with column specification:
-cols(
-  coat = col_character(),
-  weight = col_double(),
-  likes_string = col_integer()
-)
-~~~
-{: .output}
+The expression `read.csv(...)` is a [function call]({{ page.root }}/reference.html#function-call) that asks R to run the function `read.csv`.
 
-We see that the `read_csv()` table reports a "column specification".  This shows the variable names that were read in, and the type of data that each column was interpreted as.
+`read.csv` has two [arguments]({{ page.root }}/reference.html#argument): the name of the file we want to read, and whether the first line of the file contains names for the columns of data.
+The filename needs to be a character string (or [string]({{ page.root }}/reference.html#string) for short), so we put it in quotes. Assigning the second argument, `header`, to be `FALSE` indicates that the data file does not have column headers. We'll talk more about the value `FALSE`, and its converse `TRUE`, in lesson 04. In case of our `inflammation-01.csv` example, R auto-generates column names in the sequence `V1` (for "variable 1"), `V2`, and so on, until `V30`.
 
 
-~~~
-cats
-~~~
-{: .language-r}
+`read.csv` reads the file, but we can't use the data unless we assign it to a variable. Let's re-run `read.csv` and save its result into a variable called 'dat':
 
 
+```r
+dat <- read.csv(file = "data/brca-clinical-01.csv")
+```
 
-~~~
-# A tibble: 3 x 3
-  coat   weight likes_string
-  <chr>   <dbl>        <int>
-1 calico    2.1            1
-2 black     5              0
-3 tabby     3.2            1
-~~~
-{: .output}
-When we enter `cats` by itself on the command line, it will print the contents of `cats`; we see that it consists of a 3 by 3 `tibble`. A tibble is a way of storing tabular data, which is part of the tidyverse.   We see the variable names, and an (abbreviated) string indicating what type of data is stored in each variable.
+This statement doesn't produce any output because the assignment doesn't display anything.
+If we want to check if our data has been loaded, we can print the variable's value by typing the name of the variable `dat`. However, for large data sets it is convenient to use the function `head` to display only the first few rows of data.
 
 
-> ## read_csv() vs read.csv()
+```r
+head(dat)
+```
+
+```
+##        PATIENT_ID    SEX AGE METASTASIS OS_STATUS OS_MONTHS
+## 1 TCGA-A2-A0T2-01 FEMALE  66         M1  DECEASED      7.89
+## 2 TCGA-A2-A04P-01 FEMALE  36         M0  DECEASED     17.97
+## 3 TCGA-A1-A0SK-01 FEMALE  54         M0  DECEASED     31.77
+## 4 TCGA-A2-A0CM-01 FEMALE  40         M0  DECEASED     24.77
+## 5 TCGA-AR-A1AR-01 FEMALE  50         M0  DECEASED     17.18
+## 6 TCGA-B6-A0WX-01 FEMALE  40         M0  DECEASED     21.45
+```
+
+### Manipulating Data
+
+Now that our data are loaded into R, we can start doing things with them.
+First, let's ask what type of thing `dat` is:
+
+
+```r
+class(dat)
+```
+
+```
+## [1] "data.frame"
+```
+
+The output tells us that it's a data frame. Think of this structure as a spreadsheet in MS Excel that many of us are familiar with.
+Data frames are very useful for storing data and you will use them frequently when programming in R.
+A typical data frame of experimental data contains individual observations in rows and variables in columns.
+
+We can see the shape, or [dimensions]({{ page.root }}/reference.html#dimensions-of-an-array), of the data frame with the function `dim`:
+
+
+```r
+dim(dat)
+```
+
+```
+## [1] 20  6
+```
+
+This tells us that our data frame, `dat`, has 20 rows and 6 columns.
+
+If we want to get a single value from the data frame, we can provide an [index]({{ page.root }}/reference.html#index) in square brackets. The first number specifies the row and the second the column:
+
+
+```r
+# first value in dat, row 1, column 1
+dat[1, 1]
+```
+
+```
+## [1] TCGA-A2-A0T2-01
+## 20 Levels: TCGA-A1-A0SK-01 TCGA-A2-A04P-01 ... TCGA-BH-A1F0-01
+```
+
+```r
+# middle value in dat, row 20, column 5
+dat[20, 5]
+```
+
+```
+## [1] LIVING
+## Levels: DECEASED LIVING
+```
+
+The first value in a data frame index is the row, the second value is the column.
+If we want to select more than one row or column, we can use the function `c`, which stands for **c**ombine.
+For example, to pick columns 1, 3 and 5 from rows 10 and 20, we can do this:
+
+```r
+dat[c(10, 20), c(1, 3, 5)]
+```
+
+```
+##         PATIENT_ID AGE OS_STATUS
+## 10 TCGA-BH-A18Q-01  56  DECEASED
+## 20 TCGA-A7-A0DA-01  62    LIVING
+```
+We frequently want to select contiguous rows or columns, such as the first ten rows, or columns 3 through 7. You can use `c` for this, but it's more convenient to use the `:` operator. This special function generates sequences of numbers:
+
+```r
+1:5
+```
+
+```
+## [1] 1 2 3 4 5
+```
+
+```r
+3:12
+```
+
+```
+##  [1]  3  4  5  6  7  8  9 10 11 12
+```
+For example, we can select the first five columns of values for the first four rows like this:
+
+```r
+dat[1:4, 1:5]
+```
+
+```
+##        PATIENT_ID    SEX AGE METASTASIS OS_STATUS
+## 1 TCGA-A2-A0T2-01 FEMALE  66         M1  DECEASED
+## 2 TCGA-A2-A04P-01 FEMALE  36         M0  DECEASED
+## 3 TCGA-A1-A0SK-01 FEMALE  54         M0  DECEASED
+## 4 TCGA-A2-A0CM-01 FEMALE  40         M0  DECEASED
+```
+or the first five columns of rows 5 to 10 like this:
+
+```r
+dat[5:10, 1:5]
+```
+
+```
+##         PATIENT_ID    SEX AGE METASTASIS OS_STATUS
+## 5  TCGA-AR-A1AR-01 FEMALE  50         M0  DECEASED
+## 6  TCGA-B6-A0WX-01 FEMALE  40         M0  DECEASED
+## 7  TCGA-BH-A1F0-01 FEMALE  80         M0  DECEASED
+## 8  TCGA-B6-A0I6-01 FEMALE  49         M0  DECEASED
+## 9  TCGA-BH-A18V-01 FEMALE  48         M0  DECEASED
+## 10 TCGA-BH-A18Q-01 FEMALE  56         M0  DECEASED
+```
+If you want to select all rows or all columns, leave that index value empty. 
+
+```r
+# All columns from row 5
+dat[5, ]
+```
+
+```
+##        PATIENT_ID    SEX AGE METASTASIS OS_STATUS OS_MONTHS
+## 5 TCGA-AR-A1AR-01 FEMALE  50         M0  DECEASED     17.18
+```
+
+```r
+# All rows from column 4-6
+dat[, 4:6]
+```
+
+```
+##    METASTASIS OS_STATUS OS_MONTHS
+## 1          M1  DECEASED      7.89
+## 2          M0  DECEASED     17.97
+## 3          M0  DECEASED     31.77
+## 4          M0  DECEASED     24.77
+## 5          M0  DECEASED     17.18
+## 6          M0  DECEASED     21.45
+## 7          M0  DECEASED     25.79
+## 8          M0  DECEASED     32.76
+## 9          M0  DECEASED     51.09
+## 10         M0  DECEASED     55.59
+## 11         M0  DECEASED     90.75
+## 12         M0    LIVING      2.37
+## 13         M0    LIVING      4.37
+## 14         M0    LIVING      5.59
+## 15         M0    LIVING      8.77
+## 16         M0    LIVING      9.59
+## 17         M0    LIVING      9.66
+## 18         M0    LIVING     10.15
+## 19         M0    LIVING     10.71
+## 20         M0    LIVING     12.25
+```
+If you leave both index values empty (i.e., `dat[,]`), you get the entire data frame. 
+> ## Addressing Columns by Name
 >
-> You may notice while typing the command that RStudio auto suggests `read.csv()` as a function to load a comma separated 
-> value file.  This function is included as part of base R, and performs a similar job 
-> to `read_csv()`.  We will be using `read_csv()` in this course; it is part of the tidyverse,
-> so works well with other parts of the tidyverse, is faster than `read.csv()` and handles 
-> strings in a way that is usually more useful than `read.csv()`.
+> Columns can also be addressed by name, with either the `$` operator (ie. `dat$AGE`) or square brackets (ie. `dat[, 'AGE']`).
+{: .callout}
+Now let's perform some common mathematical operations to learn more about our patients data.
+When analyzing data we often want to look at partial statistics, such as the average or maximum overall survival across patients.
+One way to do this is to select the data we want to create a new temporary data frame, and then perform the calculation on this subset:
+
+```r
+# OS colum, all of the patients (rows)
+os_data <- dat[, 6]
+# max OS
+max(os_data)
+```
+
+```
+## [1] 90.75
+```
+
+R also has functions for other common calculations, e.g. finding the minimum, mean, median, and standard deviation of the data:
+
+```r
+# minimum OS
+min(dat[, 6])
+```
+
+```
+## [1] 2.37
+```
+
+```r
+# mean OS
+mean(dat[, 6])
+```
+
+```
+## [1] 22.5235
+```
+
+```r
+# median OS
+median(dat[, 6])
+```
+
+```
+## [1] 14.715
+```
+
+```r
+# standard deviation of OS
+sd(dat[, 6])
+```
+
+```
+## [1] 21.73699
+```
+
+> ## Forcing Conversion
+>
+> Note that R may return an error when you attempt to perform similar calculations on 
+> sliced *rows* of data frames. This is because some functions in R automatically convert 
+> the object type to a numeric vector, while others do not (e.g. `max(dat[1, ])` works as 
+> expected, while `mean(dat[1, ])` returns an error). You can fix this by including an 
+> explicit call to `as.numeric()`, e.g. `mean(as.numeric(dat[1, ]))`. By contrast, 
+> calculations on sliced *columns* always work as expected, since columns of data frames 
+> are already defined as vectors.
 {: .callout}
 
-> ## Loading other types of data
->
-> Another type of file you might encounter are tab-separated value files (.tsv); these can be read with the `read_tsv()` function in the `readr` package.  To read files with other delimiters, use the `read_delim()` function. If files are fixed width format (i.e. the variable is defined by its position on the line), then use the `read_fwf()` function.
->
->  The tidyverse comes with several packages for loading data in other formats.  These include:
-> * [readxl](http://readxl.tidyverse.org) for reading data from Excel spreadsheets
-> * [haven](http://haven.tidyverse.org/) for reading SAS, SPSS and Stata data files
-> * [xml2](http://xml2.tidyverse.org/) for reading xml data
-> 
-> These aren't loaded by default (when we use `library("tidyverse")`), so they will need to be loaded
-> separately, e.g. `library("readxl")`, etc.  There are also tidyverse packages for getting data via 
-> web APIs, or by "scraping" websites.  
-{: .callout}
 
+R also has a function that summaries the previous common calculations:
+
+```r
+# Summary function
+summary(dat)
+```
+
+```
+##            PATIENT_ID     SEX          AGE        METASTASIS    OS_STATUS 
+##  TCGA-A1-A0SK-01: 1   FEMALE:20   Min.   :36.00   M0:19      DECEASED:11  
+##  TCGA-A2-A04P-01: 1               1st Qu.:44.75   M1: 1      LIVING  : 9  
+##  TCGA-A2-A0CM-01: 1               Median :52.00                           
+##  TCGA-A2-A0T2-01: 1               Mean   :52.75                           
+##  TCGA-A7-A0CE-01: 1               3rd Qu.:59.75                           
+##  TCGA-A7-A0DA-01: 1               Max.   :80.00                           
+##  (Other)        :14                                                       
+##    OS_MONTHS     
+##  Min.   : 2.370  
+##  1st Qu.: 9.385  
+##  Median :14.715  
+##  Mean   :22.523  
+##  3rd Qu.:27.285  
+##  Max.   :90.750  
+## 
+```
 
-## Data types
 
-Every piece of data in R is stored as either `double`, `integer`, `complex`, `logical` or `character`.
-- `integer` variables can only store whole numbers
-- `double` variables can store floating point numbers (i.e. with a decimal part)
-- `complex` variables can store complex numbers (i.e. of the form `1+2i`)
-- `logical` variables can store `TRUE` or `FALSE`
-- `character` variables can store strings of characters.
-
-When we read the data into
-R using `read_csv()` it tries to work out what data type each variable is, which it does by looking at the data contained in the first 1000 rows of the data file.   We can see from the displayed message that `read_csv()` has treated the `coat` variable as a character variable, the `weight` variable as a floating point number and `likes_string` as an integer variable.
-
-This is almost correct; `likes_string` is, however a logical (or boolean) value — the cat either likes string (which is represented in the data file as a `1`, or doesn't (represented by `0`)).  We can specify how we would like `read_csv()` to treat the data in each variable using the `col_types` option; let's tell `read_csv()` to treat `likes_string` as a logical variable:
-
-
-~~~
-cats <- read_csv("data/feline-data.csv", col_types = cols(
-  coat = col_character(),
-  weight = col_double(),
-  likes_string = col_logical()
-) )
-~~~
-{: .language-r}
-
-That's a lot of typing!  Fortunately, we don't have to type everything by hand.  The `cols()` function above may look familiar; if we load a file using `read_csv()` without specifying the `col_types` option, it will print out the `cols()` function it has generated during the import process.  We can copy and paste this into our script, and modify it as required.   
-
-If we look at the imported data, we will now see that the `likes_string` variable is recorded as a logical.  The strict approach to specifying data types has another benefit, as we'll see...
-
-A user has added details of another cat. This information is in the file
-`data/feline-data_v2.csv`, included in the course data download.
-
-
-~~~
-file.show("data/feline-data_v2.csv")
-~~~
-{: .language-r}
-
-
-~~~
-coat,weight,likes_string
-calico,2.1,1
-black,5.0,0
-tabby,3.2,1
-tabby,2.3 or 2.4,1
-~~~
-{: .language-r}
-
-Let's load this in, using the `read_csv()` command we have just written:
-
-
-~~~
-cats2 <- read_csv("data/feline-data_v2.csv", col_types = cols(
-  coat = col_character(),
-  weight = col_double(),
-  likes_string = col_logical()
-) )
-~~~
-{: .language-r}
-
-
-
-~~~
-Warning in rbind(names(probs), probs_f): number of columns of result is not
-a multiple of vector length (arg 2)
-~~~
-{: .error}
-
-
-
-~~~
-Warning: 1 parsing failure.
-row # A tibble: 1 x 5 col     row col    expected               actual    file                      expected   <int> <chr>  <chr>                  <chr>     <chr>                     actual 1     4 weight no trailing characters " or 2.4" 'data/feline-data_v2.csv' file # A tibble: 1 x 5
-~~~
-{: .error}
-
-We see that a `parsing failure` message has been printed when we load the data.   If we look at the `cats2` data, we will see that the invalid weight `2.3 or 2.4` has been replaced with an `NA`.  This illustrates one of the benefits of
-specifying the column types when we load the data; it alerts us when something has gone wrong with the data-import. If we hadn't specified the type of data that we expect to be stored in each column, `read_csv()` will read the `weight` variable as a character variable.
-
-We don't *have* to specify a column type for each variable; the `cols()` function will guess the data types for the columns we don't specify.  It is, however, a good idea to be explicit about the type of data we expect to be in each column.
-
-> ## Importing data using RStudio
-> 
-> You may have noticed when we viewed the `feline-data.csv` file in RStudio, before importing it, that another option  appeared, labelled "Import Dataset".  This lets us import the data interactively.   It can be more convenient to use this approach, rather than manually writing the required code.   If you do this, you will find that the code RStudio has written is put into the console and run (and will appear in the history tab in RStudio).  It's fine to do this initially, but *you should copy the generated code to your script, so that you can reproduce your analysis*. 
-{: .callout}
-
-## Exploring tibbles
-
-We can "unpick" the contents of a tibble in several ways.  We can return a vector containing the values
-of a variable using the dollar symbol, `$`:
-
-
-~~~
-cats$weight
-~~~
-{: .language-r}
-
-
-
-~~~
-[1] 2.1 5.0 3.2
-~~~
-{: .output}
-
-We can also use the subsetting operator `[]` directly on tibbles.  In contrast to a vector, a tibble
-is two dimensional.   We pass two arguments to the `[]` operator; the first indicates the row(s) we 
-require and the second indicates the columns.  So to return rows 1 and 2, and columns 2 and 3 we can use:
-
-
-~~~
-cats[1:2,2:3]
-~~~
-{: .language-r}
-
-
-
-~~~
-# A tibble: 2 x 2
-  weight likes_string
-   <dbl> <lgl>       
-1    2.1 TRUE        
-2    5   FALSE       
-~~~
-{: .output}
-
-If we leave an index blank, this acts as a wildcard and matches all of the rows or columns:
-
-
-~~~
-cats[1,]
-~~~
-{: .language-r}
-
-
-
-~~~
-# A tibble: 1 x 3
-  coat   weight likes_string
-  <chr>   <dbl> <lgl>       
-1 calico    2.1 TRUE        
-~~~
-{: .output}
-
-
-
-~~~
-cats[,1]
-~~~
-{: .language-r}
-
-
-
-~~~
-# A tibble: 3 x 1
-  coat  
-  <chr> 
-1 calico
-2 black 
-3 tabby 
-~~~
-{: .output}
-
-Subsetting a tibble returns another tibble; using `$` to extract a variable returns a vector:
-
-
-~~~
-cats$coat
-~~~
-{: .language-r}
-
-
-
-~~~
-[1] "calico" "black"  "tabby" 
-~~~
-{: .output}
-
-
-
-~~~
-cats[,1]
-~~~
-{: .language-r}
-
-
-
-~~~
-# A tibble: 3 x 1
-  coat  
-  <chr> 
-1 calico
-2 black 
-3 tabby 
-~~~
-{: .output}
-
-> ## Tibbles vs data frames
-> 
-> Tibbles are used to represent tabular data in the tidyverse.  In contrast, base R
-> uses data frames to represent tabular data. One of the differences between these 
-> two types of object is *what* is returned when you extract a subset of rows/columns.
-> In contrast to a tibble, taking a subset of a data frame doesn't always return
-> another data frame. For more details see the callout at the end of this episode.
-{: .callout}
-
-## Writing data in R
-
-We can save a tibble (or data frame) to a csv file, using `readr`'s `write_csv()` function.  For example, to save the cat data to `mycats.csv`:
-
-
-~~~
-write_csv(cats, "data/mycats.csv")
-~~~
-{: .language-r}
-
-
-## Categorical data (self study)
-
-Another data structure is called a `factor`. Factors usually look like
-character data, but are used to represent categorical information.  We don't handle much
-categorical data in this course, so this session is left for self study.
-
-Let's work with the coat colours of the cats in our dataset:
-
-
-~~~
-catCoats <- cats$coat
-catCoats
-~~~
-{: .language-r}
-
-
-
-~~~
-[1] "calico" "black"  "tabby" 
-~~~
-{: .output}
-
-Let's assume that only specific values of coat colour are allowed:
-
-
-~~~
-validCoatColours <- c("white", "black", "calico", "tabby")
-~~~
-{: .language-r}
-
-We can convert our character vector of coat colours into a factor using the `parse_factor()` function:
-
-
-~~~
-coatFactor <- parse_factor(catCoats, levels = validCoatColours)
-coatFactor 
-~~~
-{: .language-r}
-
-
-
-~~~
-[1] calico black  tabby 
-Levels: white black calico tabby
-~~~
-{: .output}
-
-You might be wondering what the point of defining a factor is.  If we're fitting, e.g. a linear regression with
-a categorical variable we would need to generate indicator variables for it.   By defining our data as categorical,
-R will take care of this for us.   The factor levels will be defined in the order we specify in the vector we pass as the `levels` argument to `parse_factor`; so the baseline treatment would usually be specified as the first level.
-
-Defining variables as factors also helps us to ensure data integrity.   Consider the vector below:
-
-
-~~~
-catCoats2 <- c("calic0", "black", "tabby")
-~~~
-{: .language-r}
-
-If we try to convert this to a factor it won't work:
-
-~~~
-parse_factor(catCoats2, levels = validCoatColours)
-~~~
-{: .language-r}
-
-
-
-~~~
-Warning: 1 parsing failure.
-row # A tibble: 1 x 4 col     row   col expected           actual expected   <int> <int> <chr>              <chr>  actual 1     1    NA value in level set calic0
-~~~
-{: .error}
-
-
-
-~~~
-[1] <NA>  black tabby
-attr(,"problems")
-# A tibble: 1 x 4
-    row   col expected           actual
-  <int> <int> <chr>              <chr> 
-1     1    NA value in level set calic0
-Levels: white black calico tabby
-~~~
-{: .output}
-
-Remember that we specified the column types when we loaded the data using `read_csv()`; we can 
-take this idea a step further, and define `coat` as a factor when we load the data.
-
-> ## Challenge 1
->
-> Assume that the valid values for the coats variable are black, white, calico and tabby.
-> Read in the cats data, treating the  `coat` variable as a factor with these levels.
-> 
-> Hint: `col_factor()` and its help page may be useful.
->
-> > ## Solution to challenge 1
-> >  
-> > 
-> > ~~~
-> > cats <- read_csv("data/feline-data.csv", col_types = cols(
-> >  coat = col_factor(levels = c("black", "white", "calico",  "tabby")),
-> >  weight = col_double(),
-> >  likes_string = col_logical()
-> > ) )
-> > cats
-> > ~~~
-> > {: .language-r}
-> > 
-> > 
-> > 
-> > ~~~
-> > # A tibble: 3 x 3
-> >   coat   weight likes_string
-> >   <fct>   <dbl> <lgl>       
-> > 1 calico    2.1 TRUE        
-> > 2 black     5   FALSE       
-> > 3 tabby     3.2 TRUE        
-> > ~~~
-> > {: .output}
-> >  You may have noticed while reading the help file for `col_factor()` and `parse_factor()` that we can pass
-> > the option `levels = NULL`.  This will cause R to generate the factor levels automatically.  This can be a bad idea,
-> > since invalid data (such as "calic0" in the example above) will get their own factor level.  If, on the other hand
-> > you've got hundreds of possible values,  that's a lot of typing.  
-> >
-> > A compromise between these two approaches is to look at the levels your factor has having loaded the data, using the `levels()` function: e.g. `levels(cats$coat)`.  By testing the length of this vector you can check that you have as many factor levels as you expect.
-> >
-> {: .solution}
-{: .challenge}
-
-> ## Doing more with factors
-> 
-> If you wish to perform more complex operations on factors, such as recoding 
-> level names, changing level order, and collapsing multiple levels into one,
-> the [forcats](http://forcats.tidyverse.org/) package, which is part of the tidyverse
-> makes this easy.  Note that `forcats` isn't loaded by default, so you will
-> need to use `library("forcats")` before using it.
-{: .callout}
-
-## Matrices
-
-We can also define matrices in R.  We don't cover this in this course, since we are focussing
-on data-analysis, rather than maths and algorithms.   For details of the matrix class, you can refer to the [original Software Carpentry version of these notes](http://swcarpentry.github.io/r-novice-gapminder/04-data-structures-part1/#matrices).
-
-
-> ## Differences with base R
-> 
-> In this lesson we've taught you how to read files and make factors using the functionality in the
-> `readr` package, which is part of the tidyverse.  
-> This section highlights some of the differences between the tidyverse and its equivalent
-> functionality in base R.
->
-> R's standard data structure for tabular data is the `data.frame`.  In
-> contrast, `read_csv()` creates a `tibble` (also referred to, for historic
-> reasons, as a `tbl_df`).  This extends the functionality of  a `data.frame`,
-> and can, for the most part, be treated like a `data.frame`.
-> 
-> You may find that some older functions don't work on tibbles.   A tibble
-> can be converted to a dataframe using `as.data.frame(mytibble)`.  To convert
-> a data frame to a tibble, use `as.tibble(mydataframe)`.
-> 
-> Tibbles behave more consistently than data frames when subsetting with `[]`; 
-> this will always return another tibble.  This isn't the case when working with 
-> data.frames.  You can find out more about the differences  between data.frames and 
-> tibbles by typing `vignette("tibble")`.
-> 
-> `read_csv()` will always read variables containing text as character variables.  In contrast,
-> the base R function `read.csv()` will, by default, convert any character variable to a factor.
-> This is often not what you want, and can be overridden by passing the option `stringsAsFactors = FALSE` to `read.csv()`.  
->
-> We used `parse_factor()` to define factors.  The base R equivalent is the `factor()` function.
-> The main differences between the two approaches are:
->
-> * `factor()` will assign factor levels automatically; it does not require us to pass `levels = NULL`.
-> * The automatic levels generated by `factor()` will be alphabetical (rather than according to the order
-> that each level is encountered in `parse_factor()`)
-> * `factor()` does not warn us if we have data that doesn't match any of the levels we have specified.
-> 
-> It is chiefly for the final reason that we recommend using `parse_factor()` instead of `factor()`.  You
-> should be aware that the default ordering of factor levels differs between `factor()` and `parse_factor()`.
-{: .callout}
